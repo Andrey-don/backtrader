@@ -1,0 +1,41 @@
+# Нормализация переводов строк
+* text=auto
+
+# Python — всегда LF
+*.py text eol=lf
+
+# Markdown и текст — всегда LF
+*.md text eol=lf
+*.txt text eol=lf
+*.rst text eol=lf
+
+# Windows-скрипты — CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Конфигурация — LF
+*.json text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.toml text eol=lf
+*.cfg text eol=lf
+*.ini text eol=lf
+.env text eol=lf
+.env.example text eol=lf
+
+# Бинарные файлы — без обработки
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.gif binary
+*.ico binary
+*.mp4 binary
+*.avi binary
+*.pkl binary
+*.joblib binary
+*.pt binary
+*.pth binary
+*.h5 binary
+*.parquet binary
+*.feather binary

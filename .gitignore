@@ -8,6 +8,8 @@ __pycache__/
 dist/
 build/
 *.egg
+*.whl
+.eggs/
 
 # Jupyter
 .ipynb_checkpoints/
@@ -17,28 +19,66 @@ build/
 venv/
 env/
 .venv/
+ENV/
 
 # IDE
 .vscode/
 .idea/
 *.code-workspace
+*.swp
+*.swo
 
 # OS
 .DS_Store
 Thumbs.db
 desktop.ini
 
+# Secrets / API keys — НИКОГДА не коммитить
+.env
+.env.*
+secrets.py
+config_local.py
+*token*.txt
+*api_key*
+
 # Reports (генерируются автоматически)
+reports/
 *.html
 
 # Data files (большие, не коммитим)
+# Только корневая папка /data/, НЕ src/data/
+/data/
 *.csv
 *.xlsx
 *.parquet
 *.feather
+*.h5
+*.hdf5
 
-# Secrets / API keys
-.env
-*.env
-secrets.py
-config_local.py
+# ML-модели (генерируются)
+/models/
+*.pkl
+*.joblib
+*.pt
+*.pth
+*.onnx
+
+# Папки с материалами курса (изображения + транскрибации — слишком большие)
+"1. Backtrader - вводное"/
+1. Backtrader - вводное/
+*.jpg
+*.jpeg
+*.png
+*.mp4
+*.mkv
+*.avi
+
+# Логи
+*.log
+logs/
+
+# Временные файлы
+*.tmp
+*.bak
+tmp/
+temp/
