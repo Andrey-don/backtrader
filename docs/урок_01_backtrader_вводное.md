@@ -40,15 +40,75 @@ if __name__ == '__main__':
 
 ## 3. Загрузка данных (Finam-парсер → Cerebro)
 
+В ноутбуке урока данные загружаются напрямую с Finam через HTTP-запрос.
+
 ```python
+from urllib.parse import urlencode
+from urllib.request import urlopen
 from datetime import datetime
-import backtrader as bt
+import pandas as pd
+from io import StringIO
 
-# df — pandas DataFrame с колонкой 'datetime' (OHLCV)
+def download_finam_data(ticker, period, start_date, end_date):
+    FINAM_URL = "http://export.finam.ru/"
+    market = 0
+
+    # Словарь тикер → ID инструмента на Finam
+    tickers = {
+        'SBER': 3, 'GAZP': 16842, 'LKOH': 8, 'AFLT': 29,
+        'GMKN': 795, 'NVTK': 17370, 'ROSN': 17273, 'VTBR': 19043,
+        # ... полный список в исходном ноутбуке
+    }
+    periods = {
+        'tick': 1, 'min': 2, '5min': 3, '10min': 4,
+        '15min': 5, '30min': 6, 'hour': 7, 'daily': 8, 'week': 9, 'month': 10
+    }
+
+    start_date_obj = datetime.strptime(start_date, '%d.%m.%Y')
+    end_date_obj = datetime.strptime(end_date, '%d.%m.%Y')
+    start_date_rev = start_date_obj.strftime('%Y%m%d')
+    end_date_rev = end_date_obj.strftime('%Y%m%d')
+
+    params = urlencode([
+        ('market', market), ('em', tickers[ticker]), ('code', ticker),
+        ('df', start_date_obj.day), ('mf', start_date_obj.month - 1), ('yf', start_date_obj.year),
+        ('from', start_date),
+        ('dt', end_date_obj.day), ('mt', end_date_obj.month - 1), ('yt', end_date_obj.year),
+        ('to', end_date),
+        ('p', period),
+        ('f', ticker + "_" + start_date_rev + "_" + end_date_rev),
+        ('e', ".csv"), ('cn', ticker), ('dtf', 1), ('tmf', 1),
+        ('MSOR', 0), ('mstime', "on"), ('mstimever', 1),
+        ('sep', 1), ('sep2', 1), ('datf', 1), ('at', 1),
+    ])
+
+    url = FINAM_URL + ticker + "_" + start_date_rev + "_" + end_date_rev + ".csv?" + params
+    txt = urlopen(url).readlines()
+    txt_str = b''.join(txt).decode()
+
+    data = pd.read_csv(
+        StringIO(txt_str),
+        parse_dates={'datetime': ['<DATE>', '<TIME>']},
+        dayfirst=True,
+    )
+    data.rename(columns={
+        '<TICKER>': 'ticker', '<PER>': 'per',
+        '<OPEN>': 'open', '<HIGH>': 'high',
+        '<LOW>': 'low', '<CLOSE>': 'close', '<VOL>': 'volume',
+    }, inplace=True)
+    return data
+
+
+# Загрузка AFLT дневные свечи 2022-2023
+df = download_finam_data("AFLT", 8, "20.01.2022", "21.11.2023")
+```
+
+### Вставка данных в Cerebro
+
+```python
 data = df.copy()
-data['datetime'] = pd.to_datetime(data['datetime'])
-data.set_index('datetime', inplace=True)
-
+data["datetime"] = pd.to_datetime(data["datetime"])
+data.set_index("datetime", inplace=True)
 data_feed = bt.feeds.PandasData(dataname=data)
 cerebro.adddata(data_feed)
 ```
@@ -56,7 +116,7 @@ cerebro.adddata(data_feed)
 **Важно:**
 - Индекс DataFrame должен быть типа `datetime`
 - `bt.feeds.PandasData` принимает стандартные OHLCV-колонки
-- Источник данных не важен — подходит Finam, MetaTrader, CCXT, TradingView и др.
+- Источник данных не важен — подходит Finam, moexalgo, T-Invest API и др.
 
 ---
 
